@@ -1,0 +1,21 @@
+# 大体积视频素材（不进 git）
+*.MP4
+*.mp4
+*.mov
+*.MOV
+
+# 敏感凭证（绝不提交）
+.env
+credentials.json
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 运行时产物
+video_pipeline/library/
+video_pipeline/output/
+*.log
