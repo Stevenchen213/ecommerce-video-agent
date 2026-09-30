@@ -1,0 +1,275 @@
+{
+  "schema_version": "1.0",
+  "status": "needs_input",
+  "project": {
+    "product_name": "八宝手工切糕",
+    "brand": "疆小娃",
+    "category": "糕点零食",
+    "target_duration_sec": 30,
+    "aspect_ratio": "9:16",
+    "language": "zh-CN"
+  },
+  "global_style": {
+    "tone": "有食欲、喜庆、手作感",
+    "color": "红色、蓝色、金色为主，与包装一致",
+    "lighting": "明亮自然光",
+    "scene": "白色桌布桌面，竹篮、核桃、红枣陈列"
+  },
+  "avatar": {
+    "person_id": null,
+    "voice_id": null,
+    "figure_type": null,
+    "authorization_required": true,
+    "authorization_ref": null
+  },
+  "compliance": {
+    "category_rules": [
+      "高糖零食不得宣称健康、低卡或功效",
+      "配料以包装配料表为准，陈列道具不等于配料",
+      "包装宣传语可引用原文，不得扩写为未经证实的工艺或产地描述"
+    ],
+    "banned_terms": [
+      "健康",
+      "低卡",
+      "低糖",
+      "减肥",
+      "养生",
+      "补血",
+      "最",
+      "第一",
+      "正宗"
+    ],
+    "checked": false,
+    "ai_label": true
+  },
+  "assets": [
+    {
+      "asset_id": "qiegao_display_single",
+      "file": "2026-06-17_162257.mov",
+      "duration_sec": 6.7,
+      "description": "桌面整体陈列，手拿起单盒展示正面",
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 1.5,
+          "content": "静态全景：红盒陈列、竹篮小包装、核桃、红枣"
+        },
+        {
+          "start": 1.5,
+          "end": 6.7,
+          "content": "手拿起一盒，展示正面"
+        }
+      ]
+    },
+    {
+      "asset_id": "qiegao_two_boxes",
+      "file": "2026-06-17_165731.mov",
+      "duration_sec": 3.8,
+      "description": "竹篮小包装与核桃仁，手捧两盒",
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 1.0,
+          "content": "手持单盒，下方竹篮小包装与核桃仁"
+        },
+        {
+          "start": 1.0,
+          "end": 3.8,
+          "content": "手捧两盒，背景为堆叠包装"
+        }
+      ]
+    },
+    {
+      "asset_id": "qiegao_box_wall",
+      "file": "2026-06-17_172851.mov",
+      "duration_sec": 5.0,
+      "description": "整面包装盒陈列，手拿起两盒",
+      "segments": [
+        {
+          "start": 0.0,
+          "end": 3.3,
+          "content": "静态：两排红盒陈列，底部一篮小包装"
+        },
+        {
+          "start": 3.3,
+          "end": 5.0,
+          "content": "手从陈列中拿起两盒"
+        }
+      ]
+    }
+  ],
+  "placeholders": [
+    {
+      "key": "ingredients_spoken",
+      "description": "口播用主要配料3-4种，须以包装背面配料表为准（画面中核桃、红枣为陈列道具，需确认是否为配料）",
+      "required": true,
+      "value": null
+    }
+  ],
+  "missing_assets": [
+    "切开截面特写（最有食欲的钩子镜头）",
+    "拆开小包装、拿出一块的特写",
+    "包装背面配料表"
+  ],
+  "shots": [
+    {
+      "shot_id": 1,
+      "type": "product",
+      "purpose": "hook",
+      "duration_sec": 4,
+      "voiceover": "这一整面墙的红盒子，装的全是切糕。",
+      "on_screen_text": "一整面墙，全是切糕",
+      "visual": {
+        "description": "整面红色包装盒陈列，镜头缓慢推近，底部露出一篮独立小包装",
+        "camera": "慢推",
+        "asset_refs": [
+          "qiegao_box_wall"
+        ],
+        "clips": [
+          {
+            "asset_ref": "qiegao_box_wall",
+            "start": 0.0,
+            "end": 3.3,
+            "speed": 0.85,
+            "crop": null
+          }
+        ]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 2,
+      "type": "avatar",
+      "purpose": "pain_point",
+      "duration_sec": 5,
+      "voiceover": "下午嘴馋，又想吃点有嚼劲的？试试疆小娃八宝手工切糕。",
+      "on_screen_text": "疆小娃 八宝手工切糕",
+      "visual": {
+        "description": "数字人口播，包装盒正面图浮现在画面侧边",
+        "camera": "固定中景",
+        "asset_refs": [],
+        "overlay_asset_refs": [
+          "qiegao_display_single@3.0s"
+        ]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 3,
+      "type": "product",
+      "purpose": "product_intro",
+      "duration_sec": 5,
+      "voiceover": "包装上写得明白：真材实料，匠心制作。",
+      "on_screen_text": "真材实料 · 匠心制作",
+      "visual": {
+        "description": "手从陈列中拿起一盒，正面朝向镜头展示",
+        "camera": "固定近景",
+        "asset_refs": [
+          "qiegao_display_single"
+        ],
+        "clips": [
+          {
+            "asset_ref": "qiegao_display_single",
+            "start": 1.5,
+            "end": 6.5,
+            "speed": 1.0,
+            "crop": null
+          }
+        ]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 4,
+      "type": "product",
+      "purpose": "selling_point",
+      "duration_sec": 6,
+      "voiceover": "{{ingredients_spoken}}，一块能吃到好几种料，每块都是独立小包装。",
+      "on_screen_text": "独立小包装",
+      "visual": {
+        "description": "竹篮里满满的独立小包装切糕特写，透过包装能看到坚果果干",
+        "camera": "放大取景",
+        "asset_refs": [
+          "qiegao_display_single",
+          "qiegao_two_boxes",
+          "qiegao_box_wall"
+        ],
+        "clips": [
+          {
+            "asset_ref": "qiegao_display_single",
+            "start": 0.0,
+            "end": 1.5,
+            "speed": 1.0,
+            "crop": "下方竹篮区域放大"
+          },
+          {
+            "asset_ref": "qiegao_two_boxes",
+            "start": 0.0,
+            "end": 1.0,
+            "speed": 1.0,
+            "crop": "竹篮与核桃仁区域"
+          },
+          {
+            "asset_ref": "qiegao_box_wall",
+            "start": 0.0,
+            "end": 3.3,
+            "speed": 1.0,
+            "crop": "底部小包装区域放大"
+          }
+        ]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 5,
+      "type": "avatar",
+      "purpose": "texture",
+      "duration_sec": 5,
+      "voiceover": "坚果香，果干甜，一盒两百克，放在办公室正好。",
+      "on_screen_text": "净含量 200g",
+      "visual": {
+        "description": "数字人描述口感，画面一侧叠加小包装切糕特写",
+        "camera": "固定中景",
+        "asset_refs": [],
+        "overlay_asset_refs": [
+          "qiegao_display_single@0.5s"
+        ]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 6,
+      "type": "product",
+      "purpose": "cta",
+      "duration_sec": 5,
+      "voiceover": "喜欢有嚼劲的零食，点击下方带两盒。",
+      "on_screen_text": "点击下方带两盒",
+      "visual": {
+        "description": "手捧两盒展示，接从陈列中拿起两盒",
+        "camera": "固定近景",
+        "asset_refs": [
+          "qiegao_two_boxes",
+          "qiegao_box_wall"
+        ],
+        "clips": [
+          {
+            "asset_ref": "qiegao_two_boxes",
+            "start": 1.0,
+            "end": 3.8,
+            "speed": 0.9,
+            "crop": null
+          },
+          {
+            "asset_ref": "qiegao_box_wall",
+            "start": 3.3,
+            "end": 5.0,
+            "speed": 1.0,
+            "crop": null
+          }
+        ]
+      },
+      "transition": "fade"
+    }
+  ],
+  "voiceover_full": "这一整面墙的红盒子，装的全是切糕。下午嘴馋，又想吃点有嚼劲的？试试疆小娃八宝手工切糕。包装上写得明白：真材实料，匠心制作。{{ingredients_spoken}}，一块能吃到好几种料，每块都是独立小包装。坚果香，果干甜，一盒两百克，放在办公室正好。喜欢有嚼劲的零食，点击下方带两盒。"
+}

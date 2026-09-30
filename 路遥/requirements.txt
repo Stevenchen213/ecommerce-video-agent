@@ -1,0 +1,2 @@
+requests>=2.31
+# 另需系统安装 ffmpeg / ffprobe

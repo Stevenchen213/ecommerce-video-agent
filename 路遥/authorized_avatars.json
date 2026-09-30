@@ -1,0 +1,17 @@
+[
+  {
+    "person_id": "C-PLATFORM-DEMO-001",
+    "name": "平台虚拟主播（示例）",
+    "source": "common",
+    "is_real_person": false
+  },
+  {
+    "person_id": "C-CUSTOM-REAL-001",
+    "name": "某代言人（示例）",
+    "source": "customised",
+    "is_real_person": true,
+    "authorization_ref": "AUTH-2026-0001",
+    "brands": ["疆小娃"],
+    "valid_until": "2027-06-30"
+  }
+]

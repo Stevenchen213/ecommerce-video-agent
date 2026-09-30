@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0",
+  "status": "ready",
+  "project": {
+    "product_name": "冻干有机羽衣甘蓝粉",
+    "brand": "onlytree",
+    "category": "固体饮料",
+    "target_duration_sec": 29,
+    "aspect_ratio": "9:16",
+    "language": "zh-CN"
+  },
+  "global_style": {
+    "tone": "清爽、生活化、真实测评感",
+    "color": "绿色为主，白色、浅木色点缀",
+    "lighting": "明亮自然光，柔和",
+    "scene": "室内桌面，绿植背景"
+  },
+  "avatar": {
+    "person_id": null,
+    "voice_id": null,
+    "figure_type": null,
+    "authorization_required": true,
+    "authorization_ref": null
+  },
+  "compliance": {
+    "category_rules": ["固体饮料不得宣称疾病预防、治疗或保健功效", "营养数据须与包装标示一致"],
+    "banned_terms": ["减肥", "瘦身", "刮油", "排毒", "降脂", "降血糖", "治疗", "最", "第一"],
+    "checked": false,
+    "ai_label": true
+  },
+  "placeholders": [],
+  "shots": [
+    {
+      "shot_id": 1,
+      "type": "avatar",
+      "purpose": "hook",
+      "duration_sec": 4,
+      "voiceover": "最近到处都在卖羽衣甘蓝粉，到底值不值得买？",
+      "on_screen_text": "羽衣甘蓝粉值不值得买？",
+      "visual": {
+        "description": "数字人正面半身，面向镜头提问，产品包装图浮现在画面侧边",
+        "camera": "固定中景",
+        "asset_refs": [],
+        "overlay_asset_refs": ["onlytree_kale_box_front"]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 2,
+      "type": "avatar",
+      "purpose": "pain_point",
+      "duration_sec": 5,
+      "voiceover": "天天外卖，蔬菜总是吃不够，我找到一个省事的办法。",
+      "on_screen_text": "蔬菜总是吃不够？",
+      "visual": {
+        "description": "数字人口播，画面一角出现外卖盒图标",
+        "camera": "固定中景",
+        "asset_refs": [],
+        "overlay_asset_refs": []
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 3,
+      "type": "product",
+      "purpose": "product_intro",
+      "duration_sec": 5,
+      "voiceover": "onlytree冻干有机羽衣甘蓝粉，有机认证原料。",
+      "on_screen_text": "冻干有机羽衣甘蓝粉",
+      "visual": {
+        "description": "手持包装盒正面，镜头缓慢推近，背景绿植",
+        "camera": "缓慢推近",
+        "asset_refs": ["onlytree_kale_box_front"]
+      },
+      "transition": "zoom"
+    },
+    {
+      "shot_id": 4,
+      "type": "product",
+      "purpose": "selling_point",
+      "duration_sec": 5,
+      "voiceover": "每一百克含膳食纤维51.8克，维生素C 52.5毫克。",
+      "on_screen_text": "膳食纤维 51.8g/100g ｜ 维生素C 52.5mg/100g",
+      "visual": {
+        "description": "包装上两组营养数据特写，数字动画逐个弹出",
+        "camera": "特写平移",
+        "asset_refs": ["onlytree_kale_box_front"]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 5,
+      "type": "product",
+      "purpose": "usage",
+      "duration_sec": 5,
+      "voiceover": "撕开一条，搭配墨西哥进口奇亚籽，摇一摇就能喝。",
+      "on_screen_text": "搭配奇亚籽，摇一摇就能喝",
+      "visual": {
+        "description": "绿色粉末倒在奇亚籽上，接冲泡好的饮品倒入高脚玻璃杯，慢动作",
+        "camera": "俯拍转侧拍",
+        "asset_refs": ["onlytree_kale_pour_on_chia", "onlytree_drink_pour_glass"]
+      },
+      "transition": "cut"
+    },
+    {
+      "shot_id": 6,
+      "type": "avatar",
+      "purpose": "cta",
+      "duration_sec": 5,
+      "voiceover": "独立小条装，上班带着走。想试试的，点击下方看看。",
+      "on_screen_text": "点击下方了解",
+      "visual": {
+        "description": "数字人收尾口播，身旁展示两盒产品与扇形展开的小条包装",
+        "camera": "固定中景",
+        "asset_refs": [],
+        "overlay_asset_refs": ["onlytree_sticks_and_boxes"]
+      },
+      "transition": "fade"
+    }
+  ],
+  "voiceover_full": "最近到处都在卖羽衣甘蓝粉，到底值不值得买？天天外卖，蔬菜总是吃不够，我找到一个省事的办法。onlytree冻干有机羽衣甘蓝粉，有机认证原料。每一百克含膳食纤维51.8克，维生素C 52.5毫克。撕开一条，搭配墨西哥进口奇亚籽，摇一摇就能喝。独立小条装，上班带着走。想试试的，点击下方看看。"
+}

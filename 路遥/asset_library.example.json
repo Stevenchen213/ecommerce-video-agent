@@ -1,0 +1,5 @@
+[
+  {"asset_id": "onlytree_kale_box_front", "file": "assets/onlytree/box_front.jpg",
+   "url": "https://your-cdn.example.com/onlytree/box_front.jpg", "description": "包装盒正面"},
+  {"asset_id": "onlytree_kale_pour_on_chia", "file": "assets/onlytree/pour_on_chia.mp4", "description": "粉末倒在奇亚籽上"}
+]
