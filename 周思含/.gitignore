@@ -1,4 +1,4 @@
-# 运行时与密钥不上传（同步到仓库周思含/ 时一并带上）
+# 仅作用于周思含目录：运行时与密钥不上传
 .env
 __pycache__/
 *.py[cod]
@@ -7,7 +7,7 @@ __pycache__/
 video_pipeline/library/
 video_pipeline/output/
 video_pipeline/tmp/
-video_pipeline/jobs/
+video_pipeline/jobs/state.json
 video_pipeline/**/__pycache__/
 
 *.mp4
