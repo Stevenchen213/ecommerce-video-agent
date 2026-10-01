@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>双平台视频组装台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="brand-name">VIDEO PIPELINE</span>
+      </div>
+      <nav class="nav">
+        <a href="#shots">镜头</a>
+        <a href="#actions">操作</a>
+        <a href="#status">状态</a>
+      </nav>
+      <div class="top-meta" id="health">API · …</div>
+    </header>
+
+    <main class="layout">
+      <section class="panel intro">
+        <p class="eyebrow">脚本驱动 · 飞影数字人 + 蝉镜</p>
+        <h1>双平台视频组装台</h1>
+        <p class="lede">
+          给同伴对接用：看镜头表、检查缺镜、一键生成或仅组装成片。Planner 会先分飞影/蝉镜，再把相邻产品镜聚成连续段。
+        </p>
+      </section>
+
+      <section class="panel" id="script-panel">
+        <div class="panel-head">
+          <h2>01 / 脚本</h2>
+          <button type="button" class="btn ghost" id="btn-reload">刷新</button>
+        </div>
+        <label class="field">
+          <span>选择示例脚本</span>
+          <select id="script-select"></select>
+        </label>
+        <div class="script-meta" id="script-meta">加载中…</div>
+      </section>
+
+      <section class="panel grow" id="shots">
+        <div class="panel-head">
+          <h2>02 / 镜头表</h2>
+          <span class="hint">文件名须等于 shot id</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>角色</th>
+                <th>平台</th>
+                <th>时长</th>
+                <th>文案</th>
+                <th>库内</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="shot-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="actions">
+        <div class="panel-head">
+          <h2>03 / 操作</h2>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-run">生成并组装</button>
+          <button type="button" class="btn" id="btn-assemble">仅组装</button>
+          <button type="button" class="btn ghost" id="btn-status">刷新状态</button>
+        </div>
+        <p class="hint">
+          队友交付素材：放到 <code>library/feiying/</code> 或
+          <code>library/chanjing/</code>，文件名用 shot id，再点「仅组装」。
+        </p>
+        <pre class="log" id="log">等待操作…</pre>
+      </section>
+
+      <section class="panel" id="status">
+        <div class="panel-head">
+          <h2>04 / 成片与状态</h2>
+        </div>
+        <div class="status-grid">
+          <div>
+            <div class="label">缺镜</div>
+            <ul id="missing-list" class="list"></ul>
+          </div>
+          <div>
+            <div class="label">最近成片</div>
+            <div id="output-box" class="output-box">尚无</div>
+            <video id="preview" class="preview" controls playsinline></video>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>SWISS MINIMAL · OPS CONSOLE</span>
+      <span id="path-hint"></span>
+    </footer>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

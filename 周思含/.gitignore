@@ -1,0 +1,17 @@
+# 仅作用于周思含目录：运行时与密钥不上传
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+video_pipeline/library/
+video_pipeline/output/
+video_pipeline/tmp/
+video_pipeline/jobs/
+video_pipeline/**/__pycache__/
+
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.log

@@ -1,0 +1,51 @@
+title: Onlytree示例-钩子主播产品
+description: 演示两步分类——先分飞影/蝉镜，再把相邻产品镜聚成连续段；本例产品段为 [s1_hook] 与 [s3_closeup→s4_break]
+default_transition: cut
+
+brand:
+  enable: true
+  overlay_logo: true
+  mix_bgm: true
+  append_endcard: true
+  bgm_volume: 0.12
+
+shots:
+  - id: s1_hook
+    role: hook
+    platform: chanjing
+    text: "久坐熬夜，绿色营养是不是透支了？"
+    prompt: "产品开场钩子画面，强对比文案卡"
+    notes: "前3秒抓住注意力；单独产品段"
+    duration_sec: 3
+    aspect: "9:16"
+    transition_in: cut
+
+  - id: s2_host
+    role: host
+    platform: feiying
+    text: "今天给大家推荐 Onlytree 羽衣甘蓝粉。"
+    prompt: "数字人口播，半身，背景干净"
+    person_id: null
+    voice_id: null
+    duration_sec: 5
+    aspect: "9:16"
+    transition_in: fade
+    fade_duration_sec: 0.35
+
+  - id: s3_closeup
+    role: product_closeup
+    platform: chanjing
+    text: "产品特写：包装与原料质感。"
+    prompt: "包装特写 + 原料质感"
+    notes: "与 s4 同属一段，连贯生成"
+    duration_sec: 3
+    transition_in: fade
+    fade_duration_sec: 0.3
+
+  - id: s4_break
+    role: product_break
+    platform: chanjing
+    text: "掰开/冲泡展示。"
+    prompt: "掰开或冲泡过程"
+    duration_sec: 4
+    transition_in: cut
