@@ -4,6 +4,7 @@ from __future__ import annotations
 from .client import ChanjingClient
 
 CREATION_TYPE_VIDEO = 4
+FAILED_PROGRESS = {"Error", "Fail", "Cancelled"}
 
 
 def build_i2v_payload(model_code: str, prompt: str, ref_img_urls: list[str],
@@ -30,11 +31,12 @@ def _outputs(task: dict) -> list[str]:
 
 
 def wait_task(client: ChanjingClient, unique_id: str, interval: int, timeout: int) -> dict:
-    # 状态字段以文档为准：这里以"有产出地址"判定成功、以 err_msg 判定失败
+    # 文档：任务状态在 progress_desc（Queued/Ready/Generating/Success/Error/Fail/Cancelled），
+    # 没有数值 status 字段。成功仍以"有产出地址"为准，失败以 Error/Fail/Cancelled 或 err_msg 判定
     return client.poll(
         fetch=lambda: client.get("/open/v1/ai_creation/task", unique_id=unique_id),
         is_done=lambda t: bool(_outputs(t)),
-        is_failed=lambda t: bool(t.get("err_msg")),
+        is_failed=lambda t: t.get("progress_desc") in FAILED_PROGRESS or bool(t.get("err_msg")),
         interval=interval, timeout=timeout, label=f"ai_creation:{unique_id}")
 
 

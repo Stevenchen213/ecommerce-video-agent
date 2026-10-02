@@ -63,7 +63,7 @@ def step2_list(token):
 def step3_t2v(token):
     payload = {
         "creation_type": 4,
-        "model_code": os.getenv("CHANJING_T2V_MODEL", "happyhorse-1.0-t2v"),
+        "model_code": os.getenv("CHANJING_T2V_MODEL", "happyhorse-1.1-t2v"),
         "ref_prompt": "白色桌面上一盒绿色包装的羽衣甘蓝粉，旁边有绿植，镜头缓慢推近，自然光，真实质感",
         "aspect_ratio": "9:16",
         "clarity": 1080,
@@ -86,7 +86,7 @@ def step3_t2v(token):
                          params={"unique_id": uid}, timeout=30).json()
         task = q.get("data") or {}
         out = task.get("output_url")
-        print(f"  status={task.get('status')} progress={task.get('progress_desc')} err={task.get('err_msg')}")
+        print(f"  progress={task.get('progress_desc')} err={task.get('err_msg')}")
         if out:
             show("第3步 任务完成（原始返回）", q)
             url = out[0] if isinstance(out, list) else out
@@ -94,7 +94,7 @@ def step3_t2v(token):
                 f.write(requests.get(url, timeout=300).content)
             print("✅ 第3步通过，视频已保存为 smoke_test_output.mp4")
             return
-        if task.get("err_msg"):
+        if task.get("err_msg") or task.get("progress_desc") in ("Error", "Fail", "Cancelled"):
             show("第3步 任务失败（原始返回）", q)
             sys.exit("❌ 第3步失败")
     print("⚠️ 10 分钟内没完成，把上面的输出发给 Claude 看看")
