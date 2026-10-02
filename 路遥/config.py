@@ -22,8 +22,9 @@ class Settings:
     ai_label_font: str = os.getenv(
         "AI_LABEL_FONT", "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc")
 
-    # 图生视频默认模型（示例值，以蝉镜 AI 创作模型列表为准）
-    i2v_model_code: str = os.getenv("CHANJING_I2V_MODEL", "tx_kling-v2-1-master")
+    # 图生视频默认模型。文档中 Kling2.1 Master 的编码是 kling-v2-1-master（无 tx_ 前缀；
+    # 只有 Kling3.0 系列才带 tx_ 前缀）。其它模型编码见文档「视频模型使用说明」
+    i2v_model_code: str = os.getenv("CHANJING_I2V_MODEL", "kling-v2-1-master")
 
 
 settings = Settings()

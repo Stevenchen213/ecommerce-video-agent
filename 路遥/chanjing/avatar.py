@@ -4,24 +4,29 @@ from __future__ import annotations
 from .client import ChanjingClient
 
 STATUS_SUCCESS = 30
-STATUS_FAILED = {40, 41, 50, 1101, 999}
+STATUS_FAILED = {40, 41, 50, 1101, 999}   # 已知失败码；文档只说明 4X 参数异常、5X 服务异常
+PAGE_SIZE = 50   # 两个列表接口 page_size 上限都是 50，传 100 会报 400
+
+
+def _is_failed_status(status) -> bool:
+    return status in STATUS_FAILED or (isinstance(status, int) and status >= 40)
 
 
 def get_person(client: ChanjingClient, person_id: str, source: str) -> dict:
     """查询数字人真实记录。找不到直接报错，不猜默认值。"""
-    if source == "common":
-        page = 1
-        while True:
-            data = client.get("/open/v1/list_common_dp", page=page, size=100)
-            items = data.get("list", [])
-            found = next((p for p in items if p.get("id") == person_id), None)
-            total_page = data.get("page_info", {}).get("total_page", page)
-            if found or not items or page >= total_page:
-                break
-            page += 1
-    else:
-        data = client.post("/open/v1/list_customised_person", {"page": 1, "page_size": 100})
-        found = next((p for p in data.get("list", []) if p.get("id") == person_id), None)
+    found, page = None, 1
+    while True:
+        if source == "common":
+            data = client.get("/open/v1/list_common_dp", page=page, size=PAGE_SIZE)
+        else:
+            data = client.post("/open/v1/list_customised_person",
+                               {"page": page, "page_size": PAGE_SIZE})
+        items = data.get("list", [])
+        found = next((p for p in items if p.get("id") == person_id), None)
+        total_page = data.get("page_info", {}).get("total_page", page)
+        if found or not items or page >= total_page:
+            break
+        page += 1
     if not found:
         raise ValueError(f"数字人 {person_id} 不存在于 {source} 列表")
     return found
@@ -76,5 +81,5 @@ def wait_video(client: ChanjingClient, video_id: str, interval: int, timeout: in
     return client.poll(
         fetch=lambda: client.get("/open/v1/video", id=video_id),
         is_done=lambda d: d.get("status") == STATUS_SUCCESS and bool(d.get("video_url")),
-        is_failed=lambda d: d.get("status") in STATUS_FAILED,
+        is_failed=lambda d: _is_failed_status(d.get("status")),
         interval=interval, timeout=timeout, label=f"avatar:{video_id}")
