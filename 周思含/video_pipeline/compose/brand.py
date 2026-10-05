@@ -4,7 +4,7 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-from video_pipeline.compose.concat import probe
+from video_pipeline.compose.concat import FFMPEG, probe
 from video_pipeline.schema import BrandOptions
 
 
@@ -69,7 +69,7 @@ def apply_brand(
             f"[0:v][lg]overlay=W-w-{margin}:{margin}[v]"
         )
         cmd = [
-            "ffmpeg",
+            FFMPEG,
             "-y",
             "-i",
             str(current),
@@ -103,7 +103,7 @@ def apply_brand(
         )
         if info.has_audio:
             cmd = [
-                "ffmpeg",
+                FFMPEG,
                 "-y",
                 "-i",
                 str(current),
@@ -125,7 +125,7 @@ def apply_brand(
             ]
         else:
             cmd = [
-                "ffmpeg",
+                FFMPEG,
                 "-y",
                 "-i",
                 str(current),

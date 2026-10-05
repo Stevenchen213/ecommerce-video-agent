@@ -6,6 +6,7 @@ from pathlib import Path
 from video_pipeline.compose import (
     apply_brand,
     concat_segments,
+    mux_narration,
     transitions_from_shots,
 )
 from video_pipeline.config import Settings, load_settings
@@ -70,6 +71,24 @@ class Pipeline:
     def _library_path(self, shot: Shot) -> Path:
         return expected_library_path(self.settings.library_dir, shot)
 
+    def _narration_path(self, shot: Shot) -> Path:
+        """旁白音轨 sidecar：产品镜头（无 person_id）配李亚鹏克隆声音。"""
+        return self.settings.library_dir / f"{shot.id}_narration.wav"
+
+    def _needs_narration(self, shot: Shot) -> bool:
+        return not shot.person_id and bool(shot.text.strip())
+
+    def _generate_narration(self, shot: Shot) -> None:
+        if not self._needs_narration(shot):
+            return
+        gen_audio = getattr(self.feiying, "generate_audio", None)
+        if gen_audio is None:
+            return  # mock 模式没有真 TTS，跳过
+        try:
+            gen_audio(shot.text, self._narration_path(shot), voice_id=shot.voice_id or "")
+        except Exception as e:
+            print(f"[旁白] shot={shot.id} 生成失败（不阻断主流程）: {e}")
+
     def _ensure_dirs(self) -> None:
         self.storage.ensure_dir(self.settings.library_dir)
         self.storage.ensure_dir(self.settings.output_dir)
@@ -123,6 +142,7 @@ class Pipeline:
             for shot, result in zip(segment.shots, results, strict=True):
                 out = self._library_path(shot)
                 self.storage.put_file(result.local_path, out)
+                self._generate_narration(shot)
                 self.jobs.upsert(
                     JobRecord(
                         shot_id=shot.id,
@@ -183,16 +203,21 @@ class Pipeline:
     ) -> PipelineResult:
         self._ensure_dirs()
         paths = library_paths or self.resolve_library(script)
-        # 再次按脚本顺序缺镜检查
+        output = output or (self.settings.output_dir / "final.mp4")
+        work = self.settings.tmp_dir / "assemble"
+        # 再次按脚本顺序缺镜检查；有旁白 sidecar 的镜头先铺上音轨
         ordered: list[Path] = []
-        for shot in script.shots:
+        for i, shot in enumerate(script.shots):
             p = paths.get(shot.id) or self._library_path(shot)
             if not p.exists():
                 raise FileNotFoundError(f"组装失败，缺少必用镜头 {shot.id}: {p}")
-            ordered.append(p)
+            narr = self._narration_path(shot)
+            if self._needs_narration(shot) and narr.exists():
+                muxed = work / f"narr_{i:03d}_{p.stem}.mp4"
+                ordered.append(mux_narration(p, narr, muxed))
+            else:
+                ordered.append(p)
 
-        output = output or (self.settings.output_dir / "final.mp4")
-        work = self.settings.tmp_dir / "assemble"
         transitions, fades = transitions_from_shots(
             script.shots, default=script.default_transition
         )

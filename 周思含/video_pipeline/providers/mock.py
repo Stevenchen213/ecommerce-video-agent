@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+from video_pipeline.compose.concat import FFMPEG
 from video_pipeline.providers.base import GenerateResult, VideoProvider
 from video_pipeline.schema import Shot
 
@@ -48,7 +49,7 @@ class MockColorCardProvider(VideoProvider):
         text = label.replace(":", " ").replace("'", "")
         duration = max(0.5, float(shot.duration_sec))
         cmd = [
-            "ffmpeg",
+            FFMPEG,
             "-y",
             "-f",
             "lavfi",

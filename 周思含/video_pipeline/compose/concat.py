@@ -1,11 +1,50 @@
 from __future__ import annotations
 
 import json
+import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 from video_pipeline.schema import Shot, TransitionType
+
+
+def _ffmpeg_exe() -> str:
+    """优先系统 PATH；没有则用 imageio_ffmpeg 自带二进制（免装 ffmpeg）。"""
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return "ffmpeg"
+
+
+FFMPEG = _ffmpeg_exe()
+FFPROBE = shutil.which("ffprobe")  # imageio_ffmpeg 不带 ffprobe，缺失时 probe 走 ffmpeg -i 解析
+
+
+def _probe_via_ffmpeg(path: Path) -> MediaInfo:
+    """无 ffprobe 时用 ffmpeg -i 的 stderr 解析元数据。"""
+    proc = _run([FFMPEG, "-hide_banner", "-i", str(path)])
+    info = proc.stderr or ""
+    duration = None
+    m = re.search(r"Duration: (\d+):(\d+):(\d+\.\d+)", info)
+    if m:
+        duration = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
+    width = height = None
+    fps = None
+    has_audio = "Audio:" in info
+    vm = re.search(r"Video:.*?(\d{2,5})x(\d{2,5})", info)
+    if vm:
+        width, height = int(vm.group(1)), int(vm.group(2))
+    fm = re.search(r"([\d.]+) fps", info)
+    if fm:
+        fps = float(fm.group(1))
+    return MediaInfo(path, duration, width, height, has_audio, fps)
 
 
 @dataclass
@@ -23,8 +62,10 @@ def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
 
 
 def probe(path: Path) -> MediaInfo:
+    if not FFPROBE:
+        return _probe_via_ffmpeg(path)
     cmd = [
-        "ffprobe",
+        FFPROBE,
         "-v",
         "error",
         "-show_entries",
@@ -73,7 +114,7 @@ def _normalize_clip(
     )
     if info.has_audio:
         cmd = [
-            "ffmpeg",
+            FFMPEG,
             "-y",
             "-i",
             str(src),
@@ -91,7 +132,7 @@ def _normalize_clip(
         ]
     else:
         cmd = [
-            "ffmpeg",
+            FFMPEG,
             "-y",
             "-i",
             str(src),
@@ -118,6 +159,33 @@ def _normalize_clip(
     return dest
 
 
+def mux_narration(src: Path, narration: Path, dest: Path) -> Path:
+    """把旁白音频铺到（无声的）产品镜头上，替换其音轨。旁白比画面长则截断。"""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [
+        FFMPEG,
+        "-y",
+        "-i",
+        str(src),
+        "-i",
+        str(narration),
+        "-map",
+        "0:v",
+        "-map",
+        "1:a",
+        "-c:v",
+        "copy",
+        "-c:a",
+        "aac",
+        "-shortest",
+        str(dest),
+    ]
+    proc = _run(cmd)
+    if proc.returncode != 0:
+        raise RuntimeError(f"旁白叠加失败: {src} + {narration}\n{proc.stderr}")
+    return dest
+
+
 @dataclass
 class ConcatResult:
     output_path: Path
@@ -130,7 +198,7 @@ def _hard_concat(normalized: list[Path], output_path: Path, work_dir: Path) -> N
     lines = [f"file '{p.resolve().as_posix()}'" for p in normalized]
     list_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
     cmd_copy = [
-        "ffmpeg",
+        FFMPEG,
         "-y",
         "-f",
         "concat",
@@ -145,7 +213,7 @@ def _hard_concat(normalized: list[Path], output_path: Path, work_dir: Path) -> N
     proc = _run(cmd_copy)
     if proc.returncode != 0:
         cmd_re = [
-            "ffmpeg",
+            FFMPEG,
             "-y",
             "-f",
             "concat",
@@ -192,7 +260,7 @@ def _fade_concat(
             f"[0:a][1:a]acrossfade=d={fade}[a]"
         )
         cmd = [
-            "ffmpeg",
+            FFMPEG,
             "-y",
             "-i",
             str(current),
