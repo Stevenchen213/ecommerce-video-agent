@@ -164,6 +164,46 @@ class FeiyingProvider(VideoProvider):
 
     # ---------- 接口 ----------
 
+    def generate_audio(
+        self,
+        text: str,
+        output_path: Path,
+        voice_id: str = "",
+        title: str = "",
+    ) -> Path:
+        """纯音频 TTS（audio/create_by_tts）。
+
+        用途：B-roll/产品特写等非数字人镜头的旁白。与数字人镜头传同一个
+        克隆声音 ID，即可保证整条视频声音一致。
+        """
+        if not self.api_key:
+            raise RuntimeError("feiying 未配置 API Key，无法生成音频")
+        voice = voice_id or self.default_voice_id
+        if not voice:
+            raise ValueError("缺少 voice_id（且未配置默认声音 DEFAULT_VOICE_ID）")
+        if not text.strip():
+            raise ValueError("缺少旁白文案 text")
+
+        resp = self._http.post(
+            f"{self.api_base}/api/v2/hifly/audio/create_by_tts",
+            headers=self._headers,
+            json={"voice": voice, "text": text, "title": title or "旁白"},
+            timeout=30,
+        )
+        data = self._check(resp, "audio/create_by_tts")
+        task_id = data.get("task_id")
+        if not task_id:
+            raise FeiyingAPIError(None, f"响应缺少 task_id: {data}", "audio/create_by_tts")
+
+        done = self._poll_task(task_id, self.poll_timeout_sec)
+        audio_url = (
+            done.get("audio_Url") or done.get("audio_url") or done.get("video_Url")
+        )
+        if not audio_url:
+            raise FeiyingAPIError(None, f"音频任务完成但缺少成片地址: {done}", task_id)
+        self._download(audio_url, output_path)
+        return output_path
+
     def generate(self, shot: Shot, output_path: Path) -> GenerateResult:
         if not self.api_key:
             # 与旧占位行为一致：未配置时显式失败
