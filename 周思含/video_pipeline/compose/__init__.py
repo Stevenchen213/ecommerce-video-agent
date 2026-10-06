@@ -6,6 +6,7 @@ from video_pipeline.compose.concat import (
     probe,
     transitions_from_shots,
 )
+from video_pipeline.compose.overlay import apply_overlay, resolve_overlay_image
 
 __all__ = [
     "ConcatResult",
@@ -15,4 +16,6 @@ __all__ = [
     "transitions_from_shots",
     "apply_brand",
     "discover_brand_assets",
+    "apply_overlay",
+    "resolve_overlay_image",
 ]

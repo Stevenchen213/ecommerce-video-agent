@@ -5,8 +5,10 @@ from pathlib import Path
 
 from video_pipeline.compose import (
     apply_brand,
+    apply_overlay,
     concat_segments,
     mux_narration,
+    resolve_overlay_image,
     transitions_from_shots,
 )
 from video_pipeline.config import Settings, load_settings
@@ -205,18 +207,30 @@ class Pipeline:
         paths = library_paths or self.resolve_library(script)
         output = output or (self.settings.output_dir / "final.mp4")
         work = self.settings.tmp_dir / "assemble"
-        # 再次按脚本顺序缺镜检查；有旁白 sidecar 的镜头先铺上音轨
+        # 再次按脚本顺序缺镜检查；有旁白 sidecar 的镜头先铺上音轨；
+        # 有 overlay_asset_refs 的镜头叠产品图（素材从 root/assets/ 解析）
         ordered: list[Path] = []
+        assets_by_id = {a.asset_id: a for a in script.assets}
+        assets_dir = self.settings.root / "assets"
         for i, shot in enumerate(script.shots):
             p = paths.get(shot.id) or self._library_path(shot)
             if not p.exists():
                 raise FileNotFoundError(f"组装失败，缺少必用镜头 {shot.id}: {p}")
             narr = self._narration_path(shot)
             if self._needs_narration(shot) and narr.exists():
-                muxed = work / f"narr_{i:03d}_{p.stem}.mp4"
-                ordered.append(mux_narration(p, narr, muxed))
-            else:
-                ordered.append(p)
+                p = mux_narration(p, narr, work / f"narr_{i:03d}_{p.stem}.mp4")
+            if shot.overlay_asset_refs:
+                img = resolve_overlay_image(
+                    shot.overlay_asset_refs[0], assets_by_id, assets_dir, work, shot.id
+                )
+                if img:
+                    p = apply_overlay(
+                        p, img, work / f"ovr_{i:03d}_{shot.id}.mp4",
+                        self.settings.width, self.settings.height,
+                    )
+                else:
+                    print(f"[叠加] shot={shot.id} 素材 {shot.overlay_asset_refs[0]} 找不到，跳过")
+            ordered.append(p)
 
         transitions, fades = transitions_from_shots(
             script.shots, default=script.default_transition
