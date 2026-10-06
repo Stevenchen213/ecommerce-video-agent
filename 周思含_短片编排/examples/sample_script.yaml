@@ -1,0 +1,47 @@
+title: Onlytree短片编排示例
+description: 主线演示——飞影数字人短片 + 蝉镜产品短片按脚本顺序拼接（短片需先放入 library/）
+default_transition: cut
+brand_name: onlytree
+
+shots:
+  - id: s1_hook
+    role: hook
+    platform: chanjing
+    text: "久坐熬夜，绿色营养是不是透支了？"
+    notes: "路遥：产品 AI 短片"
+    duration_sec: 3
+    transition_in: cut
+
+  - id: s2_host
+    role: host
+    platform: feiying
+    text: "今天给大家推荐 Onlytree 羽衣甘蓝粉。"
+    notes: "陈：数字人短片"
+    person_id: qbK4XQ1bdH0Of_vcczaSRA
+    voice_id: b0c66f97-4b39-46c3-81ff-33df16d8ac41
+    duration_sec: 5
+    transition_in: fade
+
+  - id: s3_closeup
+    role: product
+    platform: chanjing
+    text: "包装特写与原料质感。"
+    notes: "路遥：产品短片"
+    duration_sec: 3
+    transition_in: fade
+
+  - id: s4_break
+    role: product
+    platform: chanjing
+    text: "冲泡 / 掰开展示。"
+    duration_sec: 4
+    transition_in: cut
+
+  - id: s5_cta
+    role: cta
+    platform: feiying
+    text: "独立小条装，上班带着走。想试试的，点击下方看看。"
+    person_id: qbK4XQ1bdH0Of_vcczaSRA
+    voice_id: b0c66f97-4b39-46c3-81ff-33df16d8ac41
+    duration_sec: 5
+    transition_in: cut

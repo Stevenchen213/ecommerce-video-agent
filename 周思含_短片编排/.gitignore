@@ -1,0 +1,18 @@
+# 运行时与密钥
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+library/**
+!library/feiying/.gitkeep
+!library/chanjing/.gitkeep
+output/
+tmp/
+jobs/
+
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.log

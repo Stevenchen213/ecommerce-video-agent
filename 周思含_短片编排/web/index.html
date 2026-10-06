@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>短片编排成片台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="mark" aria-hidden="true"></span>
+        <span class="brand-name">CLIP ASSEMBLER</span>
+      </div>
+      <nav class="nav">
+        <a href="#shots">镜头</a>
+        <a href="#actions">组装</a>
+        <a href="#status">成片</a>
+      </nav>
+      <div class="top-meta" id="health">API · …</div>
+    </header>
+
+    <main class="layout">
+      <section class="panel intro">
+        <p class="eyebrow">周思含_短片编排 · v2 主线</p>
+        <h1>短片编排成片台</h1>
+        <p class="lede">
+          路遥交产品短片，陈交数字人短片；本台按脚本检查缺镜并拼接成片。旧架构保留不动。
+        </p>
+      </section>
+
+      <section class="panel" id="script-panel">
+        <div class="panel-head">
+          <h2>01 / 脚本</h2>
+          <button type="button" class="btn ghost" id="btn-reload">刷新</button>
+        </div>
+        <label class="field">
+          <span>选择示例脚本</span>
+          <select id="script-select"></select>
+        </label>
+        <div class="script-meta" id="script-meta">加载中…</div>
+        <div class="plan-box" id="plan-box"></div>
+      </section>
+
+      <section class="panel grow" id="shots">
+        <div class="panel-head">
+          <h2>02 / 短片表</h2>
+          <span class="hint">文件名 = shot id · 放入 library/平台/</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>角色</th>
+                <th>来源</th>
+                <th>时长</th>
+                <th>文案</th>
+                <th>库内</th>
+              </tr>
+            </thead>
+            <tbody id="shot-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="actions">
+        <div class="panel-head">
+          <h2>03 / 组装</h2>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn primary" id="btn-assemble">按脚本组装</button>
+          <button type="button" class="btn ghost" id="btn-validate">仅校验</button>
+        </div>
+        <p class="hint">
+          数字人 → <code>library/feiying/</code> · 产品短片 →
+          <code>library/chanjing/</code>
+        </p>
+        <pre class="log" id="log">等待操作…</pre>
+      </section>
+
+      <section class="panel" id="status">
+        <div class="panel-head">
+          <h2>04 / 成片</h2>
+        </div>
+        <div class="status-grid">
+          <div>
+            <div class="label">缺镜</div>
+            <ul id="missing-list" class="list"></ul>
+          </div>
+          <div>
+            <div class="label">最近成片</div>
+            <div id="output-box" class="output-box">尚无</div>
+            <video id="preview" class="preview" controls playsinline></video>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <span>短片入库 → 脚本编排 → 成片</span>
+      <span id="path-hint"></span>
+    </footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
