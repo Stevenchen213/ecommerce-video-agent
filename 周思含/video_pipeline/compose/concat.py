@@ -58,7 +58,7 @@ class MediaInfo:
 
 
 def _run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, capture_output=True, text=True)
+    return subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
 
 
 def probe(path: Path) -> MediaInfo:

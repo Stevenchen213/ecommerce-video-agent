@@ -9,7 +9,7 @@ from video_pipeline.schema import BrandOptions
 
 
 def _run(cmd: list[str]) -> None:
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     if proc.returncode != 0:
         raise RuntimeError("品牌叠加失败:\n" + (proc.stderr or proc.stdout or ""))
 
