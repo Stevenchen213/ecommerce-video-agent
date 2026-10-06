@@ -6,12 +6,11 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 BASE = "https://hfw-api.hifly.cc"
 TOKEN = os.environ.get("FEIYING_TOKEN", "").strip()
 if not TOKEN:
-    import winreg
-    with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
-        TOKEN = winreg.QueryValueEx(k, "FEIYING_TOKEN")[0].strip()
+    print("错误：未设置 FEIYING_TOKEN 环境变量")
+    sys.exit(1)
 H = {"Authorization": f"Bearer {TOKEN}"}
 
-OUT = r"F:\AI项目\AI剪辑\_验证片"
+OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_验证片")
 os.makedirs(OUT, exist_ok=True)
 
 TEST_TEXT = "大家好，今天给大家推荐一款好东西。这是我们精心挑选的，品质有保证，喜欢的朋友可以试试看。"

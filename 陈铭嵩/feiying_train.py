@@ -11,13 +11,6 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="repla
 BASE = "https://hfw-api.hifly.cc"
 TOKEN = os.environ.get("FEIYING_TOKEN", "").strip()
 if not TOKEN:
-    try:
-        import winreg
-        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as k:
-            TOKEN = winreg.QueryValueEx(k, "FEIYING_TOKEN")[0].strip()
-    except Exception:
-        pass
-if not TOKEN:
     print("错误：未设置 FEIYING_TOKEN 环境变量")
     sys.exit(1)
 H = {"Authorization": f"Bearer {TOKEN}"}

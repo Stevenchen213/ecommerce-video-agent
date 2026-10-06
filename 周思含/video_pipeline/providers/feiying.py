@@ -126,6 +126,73 @@ class FeiyingProvider(VideoProvider):
             raise FeiyingAPIError(None, f"响应缺少 task_id: {data}", f"shot={shot.id}")
         return task_id
 
+    def _upload_file(self, local_path: Path) -> str:
+        """本地文件传到飞影，返回 file_id（音频驱动接口的输入）。"""
+        ext = local_path.suffix.lstrip(".")
+        resp = self._http.post(
+            f"{self.api_base}/api/v2/hifly/tool/create_upload_url",
+            headers=self._headers,
+            json={"file_extension": ext},
+            timeout=30,
+        )
+        data = self._check(resp, "create_upload_url")
+        put = requests.put(
+            data["upload_url"],
+            data=local_path.read_bytes(),
+            headers={"Content-Type": data["content_type"]},
+            timeout=300,
+        )
+        put.raise_for_status()
+        return data["file_id"]
+
+    def _create_task_by_audio(self, shot: Shot, audio: Path | str) -> str:
+        """音频驱动：shot 配好 person_id + extra.audio_path/audio_url 即可。"""
+        avatar = shot.person_id or self.default_person_id
+        if not avatar:
+            raise ValueError(f"shot={shot.id} 缺少 person_id（且未配置默认数字人）")
+        file_id = self._upload_file(Path(audio)) if isinstance(audio, Path) else None
+        payload: dict[str, Any] = {
+            "avatar": avatar,
+            "title": shot.extra.get("title") or shot.id,
+        }
+        if file_id:
+            payload["file_id"] = file_id
+        else:
+            payload["audio_url"] = str(audio)
+        if "video_start_msec" in shot.extra:
+            payload["video_start_msec"] = int(shot.extra["video_start_msec"])
+        resp = self._http.post(
+            f"{self.api_base}/api/v2/hifly/video/create_by_audio",
+            headers=self._headers,
+            json=payload,
+            timeout=30,
+        )
+        data = self._check(resp, f"create_by_audio shot={shot.id}")
+        task_id = data.get("task_id")
+        if not task_id:
+            raise FeiyingAPIError(None, f"响应缺少 task_id: {data}", f"shot={shot.id}")
+        return task_id
+
+    def generate_by_audio(
+        self, shot: Shot, audio: Path | str, output_path: Path
+    ) -> GenerateResult:
+        """音频驱动生成数字人镜头：整段口播一次 TTS、按句切开后逐句调用本方法，
+        语气连贯且口型更准；产品镜头直接铺对应音频段即可（无需再调 TTS）。"""
+        if not self.api_key:
+            raise RuntimeError("feiying 未配置 API Key，无法生成视频")
+        task_id = self._create_task_by_audio(shot, audio)
+        timeout = float(shot.extra.get("poll_timeout_sec", self.poll_timeout_sec))
+        done = self._poll_task(task_id, timeout)
+        self._download(done["video_Url"], output_path)
+        return GenerateResult(
+            provider=self.name,
+            shot_id=shot.id,
+            local_path=output_path,
+            duration_sec=done.get("duration"),
+            task_id=task_id,
+            raw={"mock": False, "driver": "audio", "avatar": shot.person_id or self.default_person_id},
+        )
+
     def _poll_task(self, task_id: str, timeout_sec: float) -> dict[str, Any]:
         deadline = time.monotonic() + timeout_sec
         while True:
