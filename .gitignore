@@ -12,6 +12,8 @@
 
 # 敏感凭证（绝不提交）
 .env
+.env.local
+.env.*.local
 credentials.json
 *.key
 
