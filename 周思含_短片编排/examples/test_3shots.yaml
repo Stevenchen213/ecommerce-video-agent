@@ -1,0 +1,42 @@
+title: 联调测试-三镜
+description: 最短可测脚本：1 产品 + 1 数字人 + 1 产品；开 Mock 即可跑通生成与组装
+default_transition: cut
+brand_name: test
+assets: []
+shots:
+- id: t1_product
+  role: hook
+  platform: chanjing
+  text: 这是产品开场短片测试。
+  duration_sec: 2.0
+  notes: ''
+  person_id: null
+  voice_id: null
+  transition_in: cut
+  fade_duration_sec: 0.35
+  asset_refs: []
+  extra: {}
+- id: t2_host
+  role: host
+  platform: feiying
+  text: 大家好，这是数字人口播测试。
+  duration_sec: 3.0
+  notes: ''
+  person_id: qbK4XQ1bdH0Of_vcczaSRA
+  voice_id: b0c66f97-4b39-46c3-81ff-33df16d8ac41
+  transition_in: cut
+  fade_duration_sec: 0.35
+  asset_refs: []
+  extra: {}
+- id: t3_product
+  role: cta
+  platform: chanjing
+  text: 这是产品收尾短片测试。
+  duration_sec: 2.0
+  notes: ''
+  person_id: null
+  voice_id: null
+  transition_in: cut
+  fade_duration_sec: 0.35
+  asset_refs: []
+  extra: {}

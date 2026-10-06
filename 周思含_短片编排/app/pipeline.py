@@ -132,3 +132,37 @@ class Pipeline:
         for p in sorted(list(examples.glob("*.yaml")) + list(examples.glob("*.yml"))):
             items.append({"name": p.name, "path": str(p.resolve())})
         return items
+
+    def list_library(self) -> dict:
+        self._ensure_dirs()
+        result = {"feiying": [], "chanjing": []}
+        for plat in ("feiying", "chanjing"):
+            folder = self.settings.library_dir / plat
+            for p in sorted(folder.glob("*.mp4")):
+                result[plat].append(
+                    {
+                        "shot_id": p.stem,
+                        "path": str(p.resolve()),
+                        "size_mb": round(p.stat().st_size / (1024 * 1024), 2),
+                    }
+                )
+        return result
+
+    def list_outputs(self) -> list[dict]:
+        self._ensure_dirs()
+        items = []
+        for p in sorted(
+            self.settings.output_dir.glob("*.mp4"),
+            key=lambda x: x.stat().st_mtime,
+            reverse=True,
+        ):
+            items.append(
+                {
+                    "name": p.name,
+                    "path": str(p.resolve()),
+                    "preview_url": f"/media/output/{p.name}",
+                    "mtime": p.stat().st_mtime,
+                    "size_mb": round(p.stat().st_size / (1024 * 1024), 2),
+                }
+            )
+        return items

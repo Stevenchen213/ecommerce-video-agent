@@ -10,6 +10,7 @@ library/**
 output/
 tmp/
 jobs/
+data/settings.json
 
 *.mp4
 *.MP4

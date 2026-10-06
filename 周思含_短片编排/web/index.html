@@ -15,97 +15,203 @@
   <body>
     <header class="top">
       <div class="brand">
-        <span class="mark" aria-hidden="true"></span>
+        <span class="mark"></span>
         <span class="brand-name">CLIP ASSEMBLER</span>
       </div>
-      <nav class="nav">
-        <a href="#shots">镜头</a>
-        <a href="#actions">组装</a>
-        <a href="#status">成片</a>
+      <nav class="tabs" id="tabs">
+        <button type="button" data-tab="script" class="active">脚本</button>
+        <button type="button" data-tab="queue">生成队列</button>
+        <button type="button" data-tab="library">素材库</button>
+        <button type="button" data-tab="assemble">组装出片</button>
+        <button type="button" data-tab="settings">设置</button>
       </nav>
       <div class="top-meta" id="health">API · …</div>
     </header>
 
     <main class="layout">
-      <section class="panel intro">
-        <p class="eyebrow">周思含_短片编排 · v2 主线</p>
-        <h1>短片编排成片台</h1>
-        <p class="lede">
-          路遥交产品短片，陈交数字人短片；本台按脚本检查缺镜并拼接成片。旧架构保留不动。
-        </p>
-      </section>
-
-      <section class="panel" id="script-panel">
-        <div class="panel-head">
-          <h2>01 / 脚本</h2>
-          <button type="button" class="btn ghost" id="btn-reload">刷新</button>
+      <!-- 脚本 -->
+      <section class="tab-panel active" id="tab-script">
+        <div class="panel intro">
+          <p class="eyebrow">可视化脚本</p>
+          <h1>编辑分镜并导出 YAML</h1>
+          <p class="lede">拖不了复杂时间线也没关系：用表格增删改顺序，保存后即可生成/组装。</p>
         </div>
-        <label class="field">
-          <span>选择示例脚本</span>
-          <select id="script-select"></select>
-        </label>
-        <div class="script-meta" id="script-meta">加载中…</div>
-        <div class="plan-box" id="plan-box"></div>
-      </section>
-
-      <section class="panel grow" id="shots">
-        <div class="panel-head">
-          <h2>02 / 短片表</h2>
-          <span class="hint">文件名 = shot id · 放入 library/平台/</span>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>ID</th>
-                <th>角色</th>
-                <th>来源</th>
-                <th>时长</th>
-                <th>文案</th>
-                <th>库内</th>
-              </tr>
-            </thead>
-            <tbody id="shot-body"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="panel" id="actions">
-        <div class="panel-head">
-          <h2>03 / 组装</h2>
-        </div>
-        <div class="actions">
-          <button type="button" class="btn primary" id="btn-assemble">按脚本组装</button>
-          <button type="button" class="btn ghost" id="btn-validate">仅校验</button>
-        </div>
-        <p class="hint">
-          数字人 → <code>library/feiying/</code> · 产品短片 →
-          <code>library/chanjing/</code>
-        </p>
-        <pre class="log" id="log">等待操作…</pre>
-      </section>
-
-      <section class="panel" id="status">
-        <div class="panel-head">
-          <h2>04 / 成片</h2>
-        </div>
-        <div class="status-grid">
-          <div>
-            <div class="label">缺镜</div>
-            <ul id="missing-list" class="list"></ul>
+        <div class="panel">
+          <div class="row wrap gap">
+            <label class="field grow">
+              <span>脚本文件</span>
+              <select id="script-select"></select>
+            </label>
+            <button class="btn ghost" id="btn-reload" type="button">刷新</button>
+            <button class="btn" id="btn-upload-script" type="button">上传脚本</button>
+            <input type="file" id="script-file" accept=".yaml,.yml,.json,text/yaml,application/json" hidden />
+            <button class="btn" id="btn-add-shot" type="button">加一镜</button>
+            <button class="btn primary" id="btn-save-script" type="button">保存脚本</button>
           </div>
-          <div>
-            <div class="label">最近成片</div>
-            <div id="output-box" class="output-box">尚无</div>
-            <video id="preview" class="preview" controls playsinline></video>
+          <p class="hint">支持上传本系统 YAML，或蝉镜侧分镜 JSON（自动识别并转成可编辑脚本）。</p>
+          <div class="row wrap gap">
+            <label class="field grow">
+              <span>标题</span>
+              <input id="script-title" />
+            </label>
+            <label class="field grow">
+              <span>品牌</span>
+              <input id="script-brand" />
+            </label>
           </div>
+          <label class="field">
+            <span>描述</span>
+            <input id="script-desc" />
+          </label>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>ID</th>
+                  <th>角色</th>
+                  <th>平台</th>
+                  <th>时长</th>
+                  <th>文案</th>
+                  <th>person</th>
+                  <th>voice</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="editor-body"></tbody>
+            </table>
+          </div>
+          <div class="row wrap gap mt">
+            <button class="btn" id="btn-import-luyao" type="button">导入分镜 JSON</button>
+            <input type="file" id="luyao-file" accept=".json,application/json" hidden />
+            <button class="btn ghost" id="btn-estimate" type="button">成本估算</button>
+            <span class="hint" id="estimate-box"></span>
+          </div>
+          <pre class="yaml-preview" id="yaml-preview"></pre>
+        </div>
+      </section>
+
+      <!-- 队列 -->
+      <section class="tab-panel" id="tab-queue">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>批量生成</h2>
+            <span class="hint">飞影 / 蝉镜分队列看进度</span>
+          </div>
+          <div class="row wrap gap">
+            <label class="check"><input type="checkbox" id="only-missing" checked /> 只生成缺镜</label>
+            <label class="check"><input type="checkbox" id="dry-run" /> Dry-run（不花钱/不写片）</label>
+            <label class="check"><input type="checkbox" id="gen-feiying" checked /> 飞影</label>
+            <label class="check"><input type="checkbox" id="gen-chanjing" checked /> 蝉镜</label>
+            <button class="btn primary" id="btn-generate" type="button">开始批量生成</button>
+          </div>
+          <div class="queue-grid mt">
+            <div class="queue-card">
+              <div class="queue-title">飞影 · 数字人</div>
+              <div class="bar"><div class="bar-fill" id="bar-feiying"></div></div>
+              <div class="mono" id="sum-feiying">—</div>
+              <ul class="job-list" id="list-feiying"></ul>
+            </div>
+            <div class="queue-card">
+              <div class="queue-title">蝉镜 · 产品短片</div>
+              <div class="bar"><div class="bar-fill chanjing" id="bar-chanjing"></div></div>
+              <div class="mono" id="sum-chanjing">—</div>
+              <ul class="job-list" id="list-chanjing"></ul>
+            </div>
+          </div>
+          <pre class="log mt" id="queue-log">等待批量任务…</pre>
+        </div>
+      </section>
+
+      <!-- 素材库 -->
+      <section class="tab-panel" id="tab-library">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>素材库</h2>
+            <button class="btn ghost" id="btn-lib-refresh" type="button">刷新</button>
+          </div>
+          <div class="queue-grid">
+            <div>
+              <div class="label">library/feiying</div>
+              <ul class="list" id="lib-feiying"></ul>
+            </div>
+            <div>
+              <div class="label">library/chanjing</div>
+              <ul class="list" id="lib-chanjing"></ul>
+            </div>
+          </div>
+          <div class="mt">
+            <div class="label">当前脚本缺镜</div>
+            <ul class="list" id="missing-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 组装 -->
+      <section class="tab-panel" id="tab-assemble">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>组装出片</h2>
+          </div>
+          <div class="row wrap gap">
+            <button class="btn" id="btn-validate" type="button">校验脚本</button>
+            <button class="btn primary" id="btn-assemble" type="button">按脚本组装</button>
+          </div>
+          <pre class="log mt" id="assemble-log">等待操作…</pre>
+          <div class="status-grid mt">
+            <div>
+              <div class="label">成片历史</div>
+              <ul class="list" id="output-list"></ul>
+            </div>
+            <div>
+              <div class="label">预览</div>
+              <div class="output-box" id="output-box">尚无</div>
+              <video id="preview" class="preview" controls playsinline></video>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 设置 -->
+      <section class="tab-panel" id="tab-settings">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>API / 环境</h2>
+            <button class="btn ghost" id="btn-probe" type="button">连通性测试</button>
+          </div>
+          <label class="check mb"><input type="checkbox" id="use-mock" /> 使用 Mock 生成（无 Key 可联调）</label>
+          <h3 class="subh">飞影 · 数字人</h3>
+          <div class="row wrap gap">
+            <label class="field grow"><span>API Base</span><input id="fy-base" /></label>
+            <label class="field grow"><span>API Key</span><input id="fy-key" type="password" placeholder="留空则不改已有密钥" /></label>
+          </div>
+          <div class="row wrap gap">
+            <label class="field grow"><span>默认 person_id</span><input id="fy-person" /></label>
+            <label class="field grow"><span>默认 voice_id</span><input id="fy-voice" /></label>
+          </div>
+          <h3 class="subh">蝉镜 · 产品短片（综合对方交付 SDK）</h3>
+          <div class="row wrap gap">
+            <label class="field grow"><span>Base URL</span><input id="cj-base" /></label>
+            <label class="field grow"><span>APP_ID</span><input id="cj-app" /></label>
+            <label class="field grow"><span>SECRET</span><input id="cj-secret" type="password" placeholder="留空则不改已有密钥" /></label>
+          </div>
+          <div class="row wrap gap">
+            <label class="field grow"><span>蝉镜侧代码目录</span><input id="cj-root" placeholder="…/_deps/ecommerce-video-agent/路遥" /></label>
+            <label class="field grow"><span>素材目录 assets</span><input id="cj-assets" placeholder="默认 &lt;代码目录&gt;/assets" /></label>
+            <label class="field grow"><span>图生模型</span><input id="cj-model" /></label>
+          </div>
+          <p class="hint">产品镜：有实拍视频则本地裁切（不花钱）；仅有图片 URL 则调图生视频。可上传对方分镜 JSON 自动带上 assets。</p>
+          <div class="row gap mt">
+            <button class="btn primary" id="btn-save-settings" type="button">保存设置</button>
+            <span class="hint" id="settings-hint">密钥只存本机 data/settings.json，不进 Git</span>
+          </div>
+          <pre class="log mt" id="probe-log">点击「连通性测试」查看 ffmpeg / 双 API 状态</pre>
         </div>
       </section>
     </main>
 
     <footer class="foot">
-      <span>短片入库 → 脚本编排 → 成片</span>
+      <span>短片入库 → 双工具生成 → 脚本编排 → 成片</span>
       <span id="path-hint"></span>
     </footer>
     <script src="/static/app.js"></script>
