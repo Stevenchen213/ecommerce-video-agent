@@ -2,6 +2,10 @@
 import os
 from dataclasses import dataclass
 
+# AI 标识字体：Windows 默认微软雅黑，Linux/Mac 默认 Noto CJK；可用 AI_LABEL_FONT 覆盖
+_DEFAULT_FONT = ("C:/Windows/Fonts/msyh.ttc" if os.name == "nt"
+                 else "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc")
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -19,12 +23,13 @@ class Settings:
     fps: int = 30
     # AI 生成标识（《人工智能生成合成内容标识办法》显式标识）
     ai_label_text: str = os.getenv("AI_LABEL_TEXT", "本视频由AI生成")
-    ai_label_font: str = os.getenv(
-        "AI_LABEL_FONT", "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc")
+    ai_label_font: str = os.getenv("AI_LABEL_FONT", _DEFAULT_FONT)
 
-    # 图生视频默认模型。文档中 Kling2.1 Master 的编码是 kling-v2-1-master（无 tx_ 前缀；
-    # 只有 Kling3.0 系列才带 tx_ 前缀）。其它模型编码见文档「视频模型使用说明」
-    i2v_model_code: str = os.getenv("CHANJING_I2V_MODEL", "kling-v2-1-master")
+    # 图生视频默认模型。tx_kling-v3-0-image2video 已按文档「Kling3.0（图生视频）」页核对
+    # （支持 1-7 张参考图、5-15 秒）。三模型对比测试出结果后，用 CHANJING_I2V_MODEL 改默认值，
+    # 并通知周思含同步工作台 settings_store.py 里的 chanjing_i2v_model（目前写的是 tx_kling-v2-1-master）
+    i2v_model_code: str = os.getenv("CHANJING_I2V_MODEL", "tx_kling-v3-0-image2video")
+    i2v_clarity: int = int(os.getenv("CHANJING_I2V_CLARITY", "1080"))
 
 
 settings = Settings()

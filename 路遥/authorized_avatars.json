@@ -11,7 +11,29 @@
     "source": "customised",
     "is_real_person": true,
     "authorization_ref": "AUTH-2026-0001",
-    "brands": ["疆小娃"],
+    "brands": [
+      "疆小娃"
+    ],
     "valid_until": "2027-06-30"
+  },
+  {
+    "person_id": "qbK4XQ1bdH0Of_vcczaSRA",
+    "name": "李亚鹏-坐姿口播-书法背景",
+    "source": "feiying",
+    "is_real_person": true,
+    "authorization_ref": "",
+    "brands": [],
+    "valid_until": "",
+    "note": "飞影形象。authorization_ref 填李亚鹏授权合同编号、brands 填授权品牌、valid_until 填到期日后才能通过授权校验"
+  },
+  {
+    "person_id": "nnDAnInYNyK5YjsBs_VpWw",
+    "name": "李亚鹏-手持展示-空手",
+    "source": "feiying",
+    "is_real_person": true,
+    "authorization_ref": "",
+    "brands": [],
+    "valid_until": "",
+    "note": "同上"
   }
 ]

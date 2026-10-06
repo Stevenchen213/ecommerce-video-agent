@@ -1,10 +1,11 @@
-"""编排层：分镜脚本 → 三道闸检查 → 分流并发提交蝉镜 → 轮询下载 → 按时间轴合成。
+"""编排层：分镜脚本 → 三道闸检查 → 产品镜头调蝉镜 → 按数字人音轨切时间轴 → 合成。
 
-分流规则（与分镜 JSON 的 type 字段一一对应）：
-  avatar  镜头 → 不单独调用。整条 voiceover_full 只调一次数字人 create_video，
-                 得到统一音轨 + 对口型视频，再按时间轴切出各 avatar 镜头的画面。
+分工（2026-10 起）：数字人走飞影，蝉镜只做产品画面。
+  avatar  镜头 → 本模块不再调用任何数字人接口。整条 voiceover_full 由飞影侧生成一条
+                 数字人视频（声音统一、口型准确），通过 avatar_video 传进来，
+                 再按时间轴切出各 avatar 镜头的画面；它的音轨作为整条成片的唯一音轨。
   product 镜头 → 有 clips（实拍素材）：本地 ffmpeg 剪辑，不花蝉豆；
-                 只有图片素材：调用 AI 创作图生视频。
+                 只有图片素材：调蝉镜图生视频（chanjing.product.gen_product）。
 """
 from __future__ import annotations
 
@@ -14,11 +15,8 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import requests
-
 from config import settings
-from chanjing import ai_creation, avatar
-from chanjing.client import ChanjingClient
+from chanjing import product
 from . import checks, composer, timeline
 
 log = logging.getLogger("orchestrator")
@@ -28,11 +26,9 @@ VIDEO_EXT = {".mp4", ".mov", ".m4v", ".webm"}
 @dataclass
 class JobConfig:
     script_path: str
-    person_id: str
-    voice_id: str
+    person_id: str                          # 飞影 avatar_id，用于授权校验（authorized_avatars.json）
+    voice_id: str = ""                      # 飞影克隆声音 ID，仅写入 plan 供飞影侧使用
     brand: str | None = None
-    source: str = "common"                 # common | customised
-    figure_type: str | None = None
     fills: dict[str, str] = field(default_factory=dict)
     assets_dir: str = "assets"
     asset_library: str | None = None       # 额外素材登记表（图片 URL 等）
@@ -40,7 +36,12 @@ class JobConfig:
     workdir: str = "work"
     output: str = "renders/output.mp4"
     dry_run: bool = False
-    mock_avatar_video: str | None = None   # 本地联调：用现成视频代替数字人接口
+    avatar_video: str | None = None        # 飞影生成的整条口播数字人视频（必填，dry_run 除外）
+    mock_avatar_video: str | None = None   # 旧字段，等同 avatar_video，保留兼容周思含的桥接代码
+
+    @property
+    def avatar_source(self) -> str | None:
+        return self.avatar_video or self.mock_avatar_video
 
 
 # ---------------- 素材库 ----------------
@@ -68,12 +69,15 @@ def plan_product_shot(shot: dict, lib: dict[str, dict]) -> dict:
             {"asset_ref": r, "path": lib[r]["file"], "start": 0,
              "end": lib[r].get("duration_sec") or composer.probe_duration(lib[r]["file"])}
             for r in videos]}
-    urls = [lib[r]["url"] for r in vis["asset_refs"] if lib[r].get("url")]
-    if not urls:
-        raise ValueError(f"镜头{shot['shot_id']} 只有图片素材但没有可访问的 url，无法图生视频")
+    # 只有图片：优先用已登记的 url，否则用本地文件（gen_product 会自动上传）
+    images = [lib[r].get("url") or lib[r]["file"] for r in vis["asset_refs"]]
+    if not images:
+        raise ValueError(f"镜头{shot['shot_id']} 没有任何产品素材，无法生成")
     prompt = f"{vis['description']}。{vis.get('camera') or ''}。竖屏商品展示，真实质感，不要出现文字"
-    return {"mode": "ai_creation", "payload": ai_creation.build_i2v_payload(
-        settings.i2v_model_code, prompt, urls, duration=5)}
+    return {"mode": "ai_creation", "images": images, "prompt": prompt,
+            "target_duration": shot.get("duration_sec"),
+            "model_code": settings.i2v_model_code,
+            "requested_duration": product.request_duration(shot.get("duration_sec"))}
 
 
 def overlay_path(shot: dict, lib: dict, workdir: Path) -> Path | None:
@@ -86,16 +90,6 @@ def overlay_path(shot: dict, lib: dict, workdir: Path) -> Path | None:
         return Path(asset["file"])
     return composer.extract_frame(asset["file"], float(at.rstrip("s") or 0),
                                   workdir / f"overlay_{shot['shot_id']}.png")
-
-
-# ---------------- 下载 ----------------
-def download(url: str, out: Path) -> Path:
-    with requests.get(url, stream=True, timeout=300) as r:
-        r.raise_for_status()
-        with out.open("wb") as f:
-            for chunk in r.iter_content(1 << 20):
-                f.write(chunk)
-    return out
 
 
 # ---------------- 主流程 ----------------
@@ -123,46 +117,40 @@ def run(cfg: JobConfig) -> dict:
     shots = script["shots"]
     product_plans = {s["shot_id"]: plan_product_shot(s, lib) for s in shots if s["type"] == "product"}
 
-    # 2) 数字人 payload（真实调用前先查形象，拿真实 figure 宽高）
-    client = None
-    if cfg.dry_run or cfg.mock_avatar_video:
-        figure = {"type": cfg.figure_type, "width": settings.width, "height": settings.height}
-    else:
-        client = ChanjingClient(settings.app_id, settings.secret_key, settings.base_url,
-                                settings.request_timeout)
-        person = avatar.get_person(client, cfg.person_id, cfg.source)
-        figure = avatar.pick_figure(person, cfg.figure_type)
-    avatar_payload = avatar.build_tts_payload(cfg.person_id, figure, cfg.voice_id,
-                                              script["voiceover_full"], settings.width, settings.height)
-
-    plan = {"avatar": {"payload": avatar_payload,
-                       "shots": [s["shot_id"] for s in shots if s["type"] == "avatar"]},
+    # 2) 调用计划：数字人部分只写给飞影侧看的请求，本模块不调用
+    plan = {"avatar": {"provider": "feiying", "person_id": cfg.person_id, "voice_id": cfg.voice_id,
+                       "text": script["voiceover_full"],
+                       "shots": [s["shot_id"] for s in shots if s["type"] == "avatar"],
+                       "video": cfg.avatar_source},
             "product": product_plans}
     (work / "plan.json").write_text(json.dumps(plan, ensure_ascii=False, indent=2), encoding="utf-8")
     if cfg.dry_run:
         return {"ok": True, "stage": "dry_run", "plan": str(work / "plan.json")}
+    if not cfg.avatar_source or not Path(cfg.avatar_source).exists():
+        return {"ok": False, "stage": "avatar",
+                "errors": {"avatar": ["缺少飞影生成的整条口播数字人视频（avatar_video）。"
+                                      "请先用 plan.json 里的 avatar.text 在飞影侧生成，再传入路径"]}}
+    avatar_video = Path(cfg.avatar_source)
 
-    # 3) 并发：数字人任务 + 所有图生视频任务同时跑
-    def run_avatar() -> Path:
-        if cfg.mock_avatar_video:
-            return Path(cfg.mock_avatar_video)
-        vid = avatar.create_video(client, avatar_payload)
-        log.info("数字人任务已提交 video_id=%s", vid)
-        res = avatar.wait_video(client, vid, settings.poll_interval, settings.poll_timeout)
-        return download(res["video_url"], work / "avatar_full.mp4")
+    # 3) 产品镜头并发调蝉镜图生视频
+    ai_plans = {sid: p for sid, p in product_plans.items() if p["mode"] == "ai_creation"}
+    ai_videos: dict[int, Path] = {}
+    if ai_plans:
+        client = product.make_client()
+        upload_cache: dict[str, str] = {}
+        # 先串行上传图片（有缓存，同图只传一次），再并发提交任务
+        for p in ai_plans.values():
+            p["image_urls"] = product.resolve_image_urls(client, p["images"], upload_cache)
 
-    def run_ai(shot_id: int, payload: dict) -> Path:
-        uid = ai_creation.submit(client, payload)
-        log.info("镜头%s 图生视频已提交 unique_id=%s", shot_id, uid)
-        task = ai_creation.wait_task(client, uid, settings.poll_interval, settings.poll_timeout)
-        return download(ai_creation.first_output(task), work / f"ai_shot_{shot_id}.mp4")
+        def run_ai(shot_id: int, p: dict) -> Path:
+            info = product.gen_product(p["image_urls"], p["prompt"], work / f"ai_shot_{shot_id}.mp4",
+                                       target_duration=p["target_duration"],
+                                       model_code=p["model_code"], client=client)
+            return Path(info["path"])
 
-    with ThreadPoolExecutor(max_workers=4) as pool:
-        fut_avatar = pool.submit(run_avatar)
-        fut_ai = {sid: pool.submit(run_ai, sid, p["payload"])
-                  for sid, p in product_plans.items() if p["mode"] == "ai_creation"}
-        avatar_video = fut_avatar.result()
-        ai_videos = {sid: f.result() for sid, f in fut_ai.items()}
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            futs = {sid: pool.submit(run_ai, sid, p) for sid, p in ai_plans.items()}
+            ai_videos = {sid: f.result() for sid, f in futs.items()}
 
     # 4) 以数字人音轨真实时长切时间轴
     total = composer.probe_duration(avatar_video)
