@@ -71,9 +71,13 @@ class ChanjingClient:
             raise ChanjingError(body.get("code"), body.get("msg", ""), path)
         return body.get("data")
 
-    def request(self, method: str, path: str, **kwargs) -> Any:
+    def request(self, method: str, path: str, retry_network: bool = True, **kwargs) -> Any:
+        """retry_network=False 用于提交任务等非幂等请求：超时/5xx 时请求可能已在服务端
+        生效，自动重试会重复建任务、重复扣蝉豆，所以只报错、不重试。
+        token 失效（服务端明确拒绝）仍会刷新后重试一次，这种情况不会重复扣费。"""
         token_retried = False
-        for attempt in range(1, self.max_retries + 1):
+        attempts = self.max_retries if retry_network else 1
+        for attempt in range(1, attempts + 1):
             headers = {"access_token": self._get_token(), "Content-Type": "application/json"}
             try:
                 resp = self._session.request(method, self.base_url + path, headers=headers,
@@ -87,7 +91,10 @@ class ChanjingClient:
                     continue
                 raise                      # 业务错误不盲目重试
             except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
-                if attempt == self.max_retries:
+                if attempt == attempts:
+                    if not retry_network:
+                        log.error("%s %s 网络异常且未自动重试（非幂等请求）。"
+                                  "任务可能已创建，请先到蝉镜控制台核对，避免重复提交", method, path)
                     raise
                 wait = 2 ** attempt
                 log.warning("%s %s 失败(%s)，%ss 后重试", method, path, e, wait)
@@ -96,8 +103,12 @@ class ChanjingClient:
     def get(self, path: str, **params) -> Any:
         return self.request("GET", path, params=params)
 
-    def post(self, path: str, body: dict) -> Any:
-        return self.request("POST", path, json=body)
+    def post(self, path: str, body: dict, retry_network: bool = True) -> Any:
+        return self.request("POST", path, retry_network=retry_network, json=body)
+
+    def submit(self, path: str, body: dict) -> Any:
+        """提交付费任务专用：不做网络重试。"""
+        return self.post(path, body, retry_network=False)
 
     # ---------- 通用轮询 ----------
     @staticmethod

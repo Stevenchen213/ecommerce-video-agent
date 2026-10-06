@@ -4,6 +4,7 @@ from __future__ import annotations
 from .client import ChanjingClient
 
 CREATION_TYPE_VIDEO = 4
+MIN_DURATION = 5          # 文档：视频模型最短 5 秒（Kling 3.0 为 5-15 秒）
 FAILED_PROGRESS = {"Error", "Fail", "Cancelled"}
 
 
@@ -21,7 +22,7 @@ def build_i2v_payload(model_code: str, prompt: str, ref_img_urls: list[str],
 
 
 def submit(client: ChanjingClient, payload: dict) -> str:
-    data = client.post("/open/v1/ai_creation/task/submit", payload)
+    data = client.submit("/open/v1/ai_creation/task/submit", payload)
     return data if isinstance(data, str) else data["unique_id"]
 
 
