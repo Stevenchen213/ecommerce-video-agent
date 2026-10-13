@@ -81,6 +81,8 @@ class Pipeline:
         return not shot.person_id and bool(shot.text.strip())
 
     def _generate_narration(self, shot: Shot) -> None:
+        if getattr(self, "_skip_narration_tts", False):
+            return  # 完整音轨模式：旁白直接从整条音轨里切，不再单独 TTS
         if not self._needs_narration(shot):
             return
         gen_audio = getattr(self.feiying, "generate_audio", None)
@@ -169,7 +171,59 @@ class Pipeline:
                     )
             raise
 
+    def generate_all_full_track(self, script: Script) -> dict[str, Path]:
+        """完整音轨模式：整脚本一次 TTS → 切分 → 数字人镜头音频驱动、产品镜头铺音轨。
+
+        开启方式：脚本 extra.voiceover = "full_track"。
+        产物：tmp/voiceover/timeline.json（每镜头精确起止，供剪辑侧用）。
+        """
+        from video_pipeline.voiceover import build_voiceover
+
+        plan = plan_script(script)
+        self._skip_narration_tts = True
+        track = build_voiceover(script, self.feiying, self.settings.tmp_dir / "voiceover")
+        seg_by_id = {s.shot_id: s for s in track.segments}
+        paths: dict[str, Path] = {}
+        for unit in plan.timeline:
+            if unit.kind == "feiying":
+                shot = unit.shot
+                assert shot is not None
+                seg = seg_by_id.get(shot.id)
+                if seg is None:
+                    raise ValueError(f"镜头 {shot.id} 没有文案，无法走完整音轨模式")
+                out = self._library_path(shot)
+                self.jobs.upsert(JobRecord(shot_id=shot.id, platform=shot.platform.value, status="running"))
+                try:
+                    result = self.feiying.generate_by_audio(shot, seg.file, out)
+                    self.jobs.upsert(JobRecord(shot_id=shot.id, platform=shot.platform.value,
+                                               status="done", local_path=str(out), task_id=result.task_id))
+                    paths[shot.id] = out
+                except Exception as e:
+                    self.jobs.upsert(JobRecord(shot_id=shot.id, platform=shot.platform.value,
+                                               status="failed", error=str(e)))
+                    raise
+            else:
+                assert unit.segment is not None
+                existing = {s.id: self._library_path(s) for s in unit.segment.shots}
+                if all(p.exists() for p in existing.values()):
+                    print(f"[跳过] 产品段 {unit.segment.id} 全部镜头已在库中", flush=True)
+                    paths.update(existing)
+                else:
+                    paths.update(self.generate_product_segment(unit.segment))
+                # 产品镜头：直接铺完整音轨里对应的那段（不再单独 TTS）
+                for shot in unit.segment.shots:
+                    seg = seg_by_id.get(shot.id)
+                    if seg is not None:
+                        self._narration_path(shot).write_bytes(seg.file.read_bytes())
+
+        missing = [s.id for s in script.shots if s.id not in paths or not paths[s.id].exists()]
+        if missing:
+            raise FileNotFoundError(f"以下必用镜头未生成: {missing}")
+        return paths
+
     def generate_all(self, script: Script) -> dict[str, Path]:
+        if script.extra.get("voiceover") == "full_track":
+            return self.generate_all_full_track(script)
         plan = plan_script(script)
         planned_ids = {s.id for s in plan.all_shots}
         script_ids = {s.id for s in script.shots}
