@@ -21,7 +21,7 @@ class BrandAssets:
     endcard: Path | None = None
 
 
-def discover_brand_assets(brand_dir: Path) -> BrandAssets:
+def discover_brand_assets(brand_dir: Path, bgm_file: str | None = None) -> BrandAssets:
     logo = None
     for name in ("logo.png", "logo.jpg", "logo.webp"):
         p = brand_dir / name
@@ -29,11 +29,20 @@ def discover_brand_assets(brand_dir: Path) -> BrandAssets:
             logo = p
             break
     bgm = None
-    for name in ("bgm.mp3", "bgm.wav", "bgm.m4a", "bgm.aac"):
-        p = brand_dir / name
+    if bgm_file:
+        p = Path(bgm_file)
+        if not p.is_absolute():
+            p = brand_dir / p
         if p.exists():
             bgm = p
-            break
+        else:
+            raise FileNotFoundError(f"指定的 BGM 不存在: {p}（音乐文件放进 {brand_dir}）")
+    else:
+        for name in ("bgm.mp3", "bgm.wav", "bgm.m4a", "bgm.aac"):
+            p = brand_dir / name
+            if p.exists():
+                bgm = p
+                break
     endcard = brand_dir / "endcard.mp4"
     return BrandAssets(
         logo=logo,
@@ -56,7 +65,7 @@ def apply_brand(
             output_path.write_bytes(video_path.read_bytes())
         return output_path
 
-    assets = discover_brand_assets(brand_dir)
+    assets = discover_brand_assets(brand_dir, options.bgm_file)
     work_dir.mkdir(parents=True, exist_ok=True)
     current = video_path
 

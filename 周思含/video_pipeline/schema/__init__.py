@@ -50,6 +50,9 @@ class BrandOptions(BaseModel):
     mix_bgm: bool = True
     append_endcard: bool = True
     bgm_volume: float = Field(0.12, ge=0.0, le=1.0)
+    bgm_file: str | None = Field(
+        None, description="指定 BGM 文件名（在 assets/brand/ 下找）；缺省自动找 bgm.*"
+    )
     logo_margin: int = Field(48, ge=0)
 
 
