@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, field_validator
 
 class Platform(str, Enum):
     FEIYING = "feiying"  # 飞影数字人
-    CHANJING = "chanjing"  # 蝉镜（产品镜头）
+    DOUBAO = "doubao"    # 产品镜头（素材库复用为主，Seedance 兜底）
 
 
 TransitionType = Literal["cut", "fade"]
@@ -29,7 +29,10 @@ class Shot(BaseModel):
     aspect: str = Field("9:16", description="期望画幅，如 9:16 / 16:9")
     transition_in: TransitionType = Field("cut", description="进入本镜的转场：cut|fade")
     fade_duration_sec: float = Field(0.4, gt=0, le=2.0, description="fade 转场时长")
-    asset_refs: list[str] = Field(default_factory=list, description="产品镜素材 ID（对接路遥）")
+    asset_refs: list[str] = Field(
+        default_factory=list,
+        description="产品镜素材引用（支持 asset_id@start-end 秒区间裁剪）",
+    )
     overlay_asset_refs: list[str] = Field(
         default_factory=list, description="数字人画面叠加素材（对接路遥）"
     )

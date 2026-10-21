@@ -14,11 +14,11 @@ from video_pipeline.compose import (
 from video_pipeline.config import Settings, load_settings
 from video_pipeline.jobs import JobRecord, JobStore
 from video_pipeline.library_check import check_library, expected_library_path
-from video_pipeline.planner import ProductSegment, plan_script
+from video_pipeline.planner import ProductSegment, enrich_shot_with_segment, plan_script
 from video_pipeline.providers import (
-    ChanjingProvider,
+    DoubaoProvider,
     FeiyingProvider,
-    MockChanjingProvider,
+    MockDoubaoProvider,
     MockFeiyingProvider,
     VideoProvider,
 )
@@ -43,31 +43,27 @@ class Pipeline:
         self.storage = LocalStorage()
         self.jobs = JobStore(self.settings.jobs_dir / "state.json")
         self.feiying: VideoProvider
-        self.chanjing: VideoProvider
+        self.doubao: VideoProvider
         if self.settings.use_mock:
             self.feiying = MockFeiyingProvider(
                 self.settings.width, self.settings.height, self.settings.fps
             )
-            self.chanjing = MockChanjingProvider(
+            self.doubao = MockDoubaoProvider(
                 self.settings.width, self.settings.height, self.settings.fps
             )
         else:
             self.feiying = FeiyingProvider(
                 self.settings.feiying_api_base, self.settings.feiying_api_key
             )
-            self.chanjing = ChanjingProvider(
-                self.settings.chanjing_api_base,
-                self.settings.chanjing_api_key,
-                app_id=self.settings.chanjing_app_id,
-                secret_key=self.settings.chanjing_secret_key,
-                luyao_root=self.settings.luyao_root,
+            self.doubao = DoubaoProvider(
+                assets_dir=self.settings.root / "assets",
             )
 
     def _provider_for(self, platform: Platform) -> VideoProvider:
         if platform == Platform.FEIYING:
             return self.feiying
-        if platform == Platform.CHANJING:
-            return self.chanjing
+        if platform == Platform.DOUBAO:
+            return self.doubao
         raise ValueError(platform)
 
     def _library_path(self, shot: Shot) -> Path:
@@ -142,7 +138,10 @@ class Pipeline:
                 )
             )
         try:
-            results = self.chanjing.generate_segment(segment, self._library_path)
+            results = [
+                self.doubao.generate(enrich_shot_with_segment(shot, segment, pos), self._library_path(shot))
+                for pos, shot in enumerate(segment.shots)
+            ]
             for shot, result in zip(segment.shots, results, strict=True):
                 out = self._library_path(shot)
                 self.storage.put_file(result.local_path, out)

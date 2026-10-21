@@ -26,7 +26,7 @@ class ProductSegment:
 
     @property
     def coherent_brief(self) -> str:
-        """给蝉镜的连贯上下文：同段内镜头按顺序拼成一段说明。"""
+        """给素材库/生成模型的连贯上下文：同段内镜头按顺序拼成一段说明。"""
         parts: list[str] = []
         n = len(self.shots)
         for i, shot in enumerate(self.shots, 1):
@@ -69,19 +69,19 @@ class TimelineUnit:
 @dataclass(frozen=True)
 class Plan:
     feiying_shots: list[Shot]
-    chanjing_shots: list[Shot]
+    doubao_shots: list[Shot]
     product_segments: list[ProductSegment]
     timeline: list[TimelineUnit]
 
     @property
     def all_shots(self) -> list[Shot]:
         # 仅用于 ID 校验；成片顺序仍看 Script.shots
-        return [*self.feiying_shots, *self.chanjing_shots]
+        return [*self.feiying_shots, *self.doubao_shots]
 
     def to_dict(self) -> dict:
         return {
             "feiying": [s.id for s in self.feiying_shots],
-            "chanjing": [s.id for s in self.chanjing_shots],
+            "chanjing": [s.id for s in self.doubao_shots],
             "product_segments": [seg.to_dict() for seg in self.product_segments],
             "timeline": [u.to_dict() for u in self.timeline],
         }
@@ -130,7 +130,7 @@ def _group_product_segments(script: Script) -> list[ProductSegment]:
         buf = []
 
     for i, shot in enumerate(script.shots):
-        if shot.platform == Platform.CHANJING:
+        if shot.platform == Platform.DOUBAO:
             buf.append((i, shot))
         else:
             flush()
@@ -149,7 +149,7 @@ def plan_script(script: Script) -> Plan:
     for shot in script.shots:
         if shot.platform == Platform.FEIYING:
             feiying.append(shot)
-        elif shot.platform == Platform.CHANJING:
+        elif shot.platform == Platform.DOUBAO:
             chanjing.append(shot)
         else:
             raise ValueError(f"未知 platform: {shot.platform}")
@@ -166,7 +166,7 @@ def plan_script(script: Script) -> Plan:
             timeline.append(TimelineUnit(kind="feiying", shot=shot))
             i += 1
             continue
-        if shot.platform == Platform.CHANJING:
+        if shot.platform == Platform.DOUBAO:
             seg = seg_by_start.get(i)
             if seg is None:
                 raise RuntimeError(f"产品镜 {shot.id} 未落入任何产品段")
@@ -177,7 +177,7 @@ def plan_script(script: Script) -> Plan:
 
     return Plan(
         feiying_shots=feiying,
-        chanjing_shots=chanjing,
+        doubao_shots=chanjing,
         product_segments=product_segments,
         timeline=timeline,
     )

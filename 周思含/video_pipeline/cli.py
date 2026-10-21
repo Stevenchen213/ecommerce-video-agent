@@ -38,7 +38,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
     print(f"  default_transition={script.default_transition}")
     print(f"  brand.enable={script.brand.enable}")
     print(f"  [1] feiying(数字人): {[s.id for s in plan.feiying_shots]}")
-    print(f"  [1] chanjing(产品): {[s.id for s in plan.chanjing_shots]}")
+    print(f"  [1] doubao(产品): {[s.id for s in plan.doubao_shots]}")
     print(f"  [2] product_segments ({len(plan.product_segments)}):")
     for seg in plan.product_segments:
         print(f"      - {seg.id}: {seg.shot_ids}")

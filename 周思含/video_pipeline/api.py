@@ -94,7 +94,7 @@ def get_script(path: str = Query(..., description="脚本绝对或相对路径")
         "path": str(Path(path).resolve()),
         "shots": [s.model_dump() for s in script.shots],
         "feiying": [s.id for s in plan.feiying_shots],
-        "chanjing": [s.id for s in plan.chanjing_shots],
+        "doubao": [s.id for s in plan.doubao_shots],
         "product_segments": [seg.to_dict() for seg in plan.product_segments],
         "timeline": [u.to_dict() for u in plan.timeline],
         "library_ok": check.ok,
@@ -121,7 +121,7 @@ def validate(req: RunRequest):
         "title": script.title,
         "shots": len(script.shots),
         "feiying": [s.id for s in plan.feiying_shots],
-        "chanjing": [s.id for s in plan.chanjing_shots],
+        "doubao": [s.id for s in plan.doubao_shots],
         "product_segments": [seg.to_dict() for seg in plan.product_segments],
         "timeline": [u.to_dict() for u in plan.timeline],
     }

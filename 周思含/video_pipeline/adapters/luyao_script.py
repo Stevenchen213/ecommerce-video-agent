@@ -26,7 +26,7 @@ class IdMap:
 def _shot_type(shot: Shot) -> str:
     if shot.platform == Platform.FEIYING:
         return "avatar"
-    if shot.platform == Platform.CHANJING:
+    if shot.platform == Platform.DOUBAO:
         return "product"
     raise ValueError(f"未知 platform: {shot.platform}")
 

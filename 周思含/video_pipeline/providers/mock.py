@@ -95,6 +95,6 @@ class MockFeiyingProvider(MockColorCardProvider):
         super().__init__("feiying", "0x1a3a5c", width, height, fps)
 
 
-class MockChanjingProvider(MockColorCardProvider):
+class MockDoubaoProvider(MockColorCardProvider):
     def __init__(self, width: int = 1080, height: int = 1920, fps: int = 30):
-        super().__init__("chanjing", "0x1a5c3a", width, height, fps)
+        super().__init__("doubao", "0x1a5c3a", width, height, fps)

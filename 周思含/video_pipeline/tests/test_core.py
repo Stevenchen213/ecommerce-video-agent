@@ -25,7 +25,7 @@ def test_load_and_plan(tmp_path: Path):
                     {
                         "id": "a",
                         "role": "hook",
-                        "platform": "chanjing",
+                        "platform": "doubao",
                         "duration_sec": 1,
                     },
                     {
@@ -42,7 +42,7 @@ def test_load_and_plan(tmp_path: Path):
     )
     script = load_script(script_path)
     plan = plan_script(script)
-    assert [s.id for s in plan.chanjing_shots] == ["a"]
+    assert [s.id for s in plan.doubao_shots] == ["a"]
     assert [s.id for s in plan.feiying_shots] == ["b"]
     assert [seg.shot_ids for seg in plan.product_segments] == [["a"]]
     assert [u.to_dict() for u in plan.timeline] == [
@@ -56,19 +56,19 @@ def test_two_step_product_segments():
     script = Script(
         title="seg",
         shots=[
-            Shot(id="p1", role="product", platform=Platform.CHANJING),
+            Shot(id="p1", role="product", platform=Platform.DOUBAO),
             Shot(id="h1", role="host", platform=Platform.FEIYING),
-            Shot(id="p2", role="product", platform=Platform.CHANJING),
-            Shot(id="p3", role="product", platform=Platform.CHANJING),
-            Shot(id="p4", role="product", platform=Platform.CHANJING),
+            Shot(id="p2", role="product", platform=Platform.DOUBAO),
+            Shot(id="p3", role="product", platform=Platform.DOUBAO),
+            Shot(id="p4", role="product", platform=Platform.DOUBAO),
             Shot(id="h2", role="host", platform=Platform.FEIYING),
-            Shot(id="p5", role="product", platform=Platform.CHANJING),
-            Shot(id="p6", role="product", platform=Platform.CHANJING),
+            Shot(id="p5", role="product", platform=Platform.DOUBAO),
+            Shot(id="p6", role="product", platform=Platform.DOUBAO),
         ],
     )
     plan = plan_script(script)
     assert [s.id for s in plan.feiying_shots] == ["h1", "h2"]
-    assert [s.id for s in plan.chanjing_shots] == ["p1", "p2", "p3", "p4", "p5", "p6"]
+    assert [s.id for s in plan.doubao_shots] == ["p1", "p2", "p3", "p4", "p5", "p6"]
     assert [seg.shot_ids for seg in plan.product_segments] == [
         ["p1"],
         ["p2", "p3", "p4"],
@@ -104,7 +104,7 @@ def test_script_to_luyao_adapter():
             Shot(
                 id="s1_hook",
                 role="hook",
-                platform=Platform.CHANJING,
+                platform=Platform.DOUBAO,
                 text="钩子文案",
                 asset_refs=["box"],
                 duration_sec=3,
@@ -121,7 +121,7 @@ def test_script_to_luyao_adapter():
             Shot(
                 id="s3_prod",
                 role="product",
-                platform=Platform.CHANJING,
+                platform=Platform.DOUBAO,
                 text="产品展示",
                 asset_refs=["box"],
                 duration_sec=5,
@@ -148,7 +148,7 @@ def test_duplicate_shot_id_rejected():
         Script(
             title="x",
             shots=[
-                Shot(id="a", role="hook", platform=Platform.CHANJING),
+                Shot(id="a", role="hook", platform=Platform.DOUBAO),
                 Shot(id="a", role="host", platform=Platform.FEIYING),
             ],
         )
@@ -158,14 +158,14 @@ def test_library_missing(tmp_path: Path):
     script = Script(
         title="x",
         shots=[
-            Shot(id="s1", role="hook", platform=Platform.CHANJING),
+            Shot(id="s1", role="hook", platform=Platform.DOUBAO),
             Shot(id="s2", role="host", platform=Platform.FEIYING),
         ],
     )
     lib = tmp_path / "library"
-    (lib / "chanjing").mkdir(parents=True)
+    (lib / "doubao").mkdir(parents=True)
     # only create s1
-    (lib / "chanjing" / "s1.mp4").write_bytes(b"not-real")
+    (lib / "doubao" / "s1.mp4").write_bytes(b"not-real")
     check = check_library(script, lib)
     assert check.ok is False
     assert check.missing[0].shot_id == "s2"
@@ -177,9 +177,9 @@ def test_assemble_order_paths(tmp_path: Path):
     script = Script(
         title="x",
         shots=[
-            Shot(id="s1", role="hook", platform=Platform.CHANJING),
+            Shot(id="s1", role="hook", platform=Platform.DOUBAO),
             Shot(id="s2", role="host", platform=Platform.FEIYING),
-            Shot(id="s3", role="product_closeup", platform=Platform.CHANJING),
+            Shot(id="s3", role="product_closeup", platform=Platform.DOUBAO),
         ],
     )
     lib = tmp_path / "library"
