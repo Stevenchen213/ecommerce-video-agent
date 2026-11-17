@@ -1,0 +1,13 @@
+# 秋梨糕第一条测试：只用素材库，不调任何 API、不花钱
+# 程序按 asset_tags 去 assets/asset_index.json 里找素材，自动裁剪，拼成剪映草稿
+title: 秋梨糕带货_自动测试
+brand:
+  enable: false
+
+shots:
+  - {id: s1_break,  role: product_break,   platform: doubao, asset_tags: [秋梨糕, 掰开特写], text: "酥到掉渣的秋梨糕来了！"}
+  - {id: s2_filling, role: product_closeup, platform: doubao, asset_tags: [秋梨糕, 馅料特写], text: "满满的梨馅 清甜不腻"}
+  - {id: s3_pack,   role: product_closeup, platform: doubao, asset_tags: [秋梨糕, 独立包装], text: "独立包装 干净卫生"}
+  - {id: s4_point,  role: product_closeup, platform: doubao, asset_tags: [秋梨糕, 包装卖点], text: "外酥里软 老人小孩都爱吃"}
+  - {id: s5_ingr,   role: product_closeup, platform: doubao, asset_tags: [秋梨糕, 配料表],   text: "真材实料 秋梨添加23%"}
+  - {id: s6_shelf,  role: product_display, platform: doubao, asset_tags: [秋梨糕, 产品陈列], text: "疆小娃陈皮山药秋梨糕"}

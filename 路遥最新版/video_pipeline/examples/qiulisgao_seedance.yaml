@@ -1,0 +1,36 @@
+# 秋梨糕示例：演示「素材库优先 → 标签匹配 → Seedance 兜底 → 剪映草稿」
+# 跑法：python -m video_pipeline.cli run examples/qiulisgao_seedance.yaml --jianying
+title: 秋梨糕_带货视频
+extra:
+  voiceover: full_track        # 整条一次 TTS，产品镜头时长 = 对应音频段长度
+
+shots:
+  - id: s1_host
+    role: host
+    platform: feiying
+    text: "大家好，今天给大家推荐一款特别好吃的秋梨糕"
+
+  - id: s2_break                # 第 1 层：脚本写死文件 + 区间（最确定）
+    role: product_break
+    platform: doubao
+    text: "酥到掉渣，梨馅满满"
+    asset_refs: ["秋梨糕/8.3-3.mp4@0-4"]
+
+  - id: s3_pack                 # 第 2 层：按标签查 assets/asset_index.json
+    role: product_closeup
+    platform: doubao
+    text: "独立包装，干净卫生"
+    asset_tags: [秋梨糕, 独立包装]
+
+  - id: s4_gift                 # 素材库没有 → 第 4 层：Seedance 图生视频（约 24 元，之后缓存免费）
+    role: product_scene
+    platform: doubao
+    text: "送长辈送朋友都很有面子"
+    asset_tags: [秋梨糕, 礼盒场景]
+    image_ref: 秋梨糕/礼盒正面.jpg
+    prompt: "礼盒放在中式木桌上，镜头缓慢推近，暖色灯光，美食广告质感"
+
+  - id: s5_cta
+    role: cta
+    platform: feiying
+    text: "老人小孩都能吃，喜欢的赶紧下单吧"

@@ -1,0 +1,27 @@
+# 产品简报：给豆包规划用（不是分镜脚本）
+# 跑法：
+#   python -m video_pipeline.cli plan examples/brief_qiulisgao.yaml        # 只出脚本，先人工看
+#   python -m video_pipeline.cli auto examples/brief_qiulisgao.yaml --jianying   # 一条龙出片
+product_name: 秋梨糕
+brand: 疆小娃
+selling_points:
+  - 外皮酥到掉渣，梨馅满满
+  - 配料干净，秋梨添加 23%
+  - 独立小包装，干净卫生，方便带
+  - 老人小孩都爱吃，送礼有面子
+target_audience: 25-45 岁，给家人买零食 / 走亲戚送礼的宝妈
+price_info: 到手价 29.9 元两盒
+style: 真实口语化，像朋友推荐，不夸张叫卖
+target_duration_sec: 30
+
+use_avatar: true          # false = 全部用产品画面 + 旁白
+person_id: null           # 不填用 .env 里的 DEFAULT_PERSON_ID
+voice_id: null            # 不填用 DEFAULT_VOICE_ID
+voiceover: full_track     # 整条一次配音，数字人和产品旁白同一个声音
+
+# 素材库没有合适画面时，Seedance 图生视频用的产品图（相对 assets/）
+product_images:
+  - 秋梨糕/礼盒正面.jpg
+
+banned_words: []          # 额外违禁词（默认已有广告法极限词 / 功效词）
+notes: 结尾强调限时优惠
